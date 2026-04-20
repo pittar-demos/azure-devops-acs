@@ -1,26 +1,32 @@
-# Azure DevOps Pipenes with RHACS
+# Azure DevOps Pipelines with RHACS
 
 A demo repo to show how to integrate Red Hat Advanced Cluster Security for Kubernetes CLI (`roxctl`) with Azure DevOps Pipelines.
 
 ## Setup
 
-You will need a two variables in your ADO pipeline:
-* `ROX_API_TOKEN`: This will be the API token you generate from ACS Central
-* `ROX_CENTRAL_ADDRESS`: The URL for your ACS Central instance.
+You will need two variables in your ADO pipeline:
 
-`ROX_API_TOKEN`
-* Log into ACS Central as an admin.
-* Go to **Platform Configurations -> Integrations -> Authentication -> StackRox (API Token)**
-* Click **Generate Token**.  Give the token a name and choose **Continuous Integration** as the Role.  Select an expiration date and generate.  Copy this value and paste it into the `ROX_API_TOKEN` variable in Azure DevOps.
+| Variable | Description |
+|---|---|
+| `ROX_API_TOKEN` | API token generated from ACS Central |
+| `ROX_CENTRAL_ADDRESS` | URL of your ACS Central instance |
 
-`ROX_CENTRAL_ADDRESS`:
-* This is the URL of your Central instance.  Usually `central-stackrox.apps.<clusterdomain>:443`.  Do not include `https://` and DO include `:443`.
+### ROX_API_TOKEN
+
+1. Log into ACS Central as an admin.
+2. Go to **Platform Configuration > Integrations > Authentication > StackRox (API Token)**
+3. Click **Generate Token**. Give the token a name, choose **Continuous Integration** as the Role, and set an expiration date.
+4. Copy the generated value and paste it into the `ROX_API_TOKEN` variable in Azure DevOps.
+
+### ROX_CENTRAL_ADDRESS
+
+This is the URL of your Central instance — usually `central-stackrox.apps.<clusterdomain>:443`. Do **not** include `https://`, but **do** include `:443`.
 
 You should be ready to use ACS to scan your images.
 
 ## Sample Pipeline
 
-```
+```yaml
 trigger: none
 
 variables:
@@ -109,14 +115,11 @@ stages:
               tags: ado-dev
 ```
 
-The important aspects in the pipelien above are:
+The important aspects in the pipeline above are:
 
-**Cache roxctl:** Not strictly required, but this creates a cache for the `roxctl` cli so it doesn't have to be downlaoded every time the pipeline is run.
-
-**Install roxctl:** Download the `roxctl` cli from the Red Hat mirror.  Provided the version number doesn't change, this will only happen once.
-
-**roxctl image scan:** Scan the image for violations.
-
-**roxctl image check:** Check the scan results.  If there are policy violations, fail the build.
-
-
+| Step | Notes |
+|---|---|
+| **Cache roxctl** | Not strictly required, but caches the `roxctl` binary so it isn't re-downloaded on every run. |
+| **Install roxctl** | Downloads `roxctl` from the Red Hat mirror. Only runs when the cache is cold or the version changes. |
+| **roxctl image scan** | Scans the image for vulnerabilities and policy violations. |
+| **roxctl image check** | Evaluates scan results against your policies. Fails the build if violations are found. |
