@@ -1,26 +1,3 @@
-# Azure DevOps Pipenes with RHACS
-
-A demo repo to show how to integrate Red Hat Advanced Cluster Security for Kubernetes CLI (`roxctl`) with Azure DevOps Pipelines.
-
-## Setup
-
-You will need a two variables in your ADO pipeline:
-* `ROX_API_TOKEN`: This will be the API token you generate from ACS Central
-* `ROX_CENTRAL_ADDRESS`: The URL for your ACS Central instance.
-
-`ROX_API_TOKEN`
-* Log into ACS Central as an admin.
-* Go to **Platform Configurations -> Integrations -> Authentication -> StackRox (API Token)**
-* Click **Generate Token**.  Give the token a name and choose **Continuous Integration** as the Role.  Select an expiration date and generate.  Copy this value and paste it into the `ROX_API_TOKEN` variable in Azure DevOps.
-
-`ROX_CENTRAL_ADDRESS`:
-* This is the URL of your Central instance.  Usually `central-stackrox.apps.<clusterdomain>:443`.  Do not include `https://` and DO include `:443`.
-
-You should be ready to use ACS to scan your images.
-
-## Sample Pipeline
-
-```
 trigger: none
 
 variables:
@@ -107,16 +84,3 @@ stages:
               containerRegistry: quay-service-connection
               repository: $(IMAGE_REPOSITORY)
               tags: ado-dev
-```
-
-The important aspects in the pipelien above are:
-
-**Cache roxctl:** Not strictly required, but this creates a cache for the `roxctl` cli so it doesn't have to be downlaoded every time the pipeline is run.
-
-**Install roxctl:** Download the `roxctl` cli from the Red Hat mirror.  Provided the version number doesn't change, this will only happen once.
-
-**roxctl image scan:** Scan the image for violations.
-
-**roxctl image check:** Check the scan results.  If there are policy violations, fail the build.
-
-
